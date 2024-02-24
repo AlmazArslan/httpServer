@@ -20,22 +20,14 @@ namespace ownHTTPServer
             socket_,
             buffer_,
             request_,
-            boost::bind(
-                &ownHTTPServer::http_connection::read_handler,
-                self,
-                boost::asio::placeholders::error,
-                boost::asio::placeholders::bytes_transferred
-            )
+            [self](beast::error_code ec,
+                std::size_t bytes_transferred)
+            {
+                boost::ignore_unused(bytes_transferred);
+                if(!ec)
+                    self->process_request();
+            }
         );
-    }
-
-    void http_connection::read_handler(const boost::system::error_code& error, std::size_t bt)
-    {
-        if (!error)
-        {
-            std::cout << "Target: " << request_.target() << "\n" <<
-                filecollector->get_file_data(request_.target().substr(1)) << "\n";
-        }
     }
 
     void http_connection::process_request(void)
@@ -64,8 +56,11 @@ namespace ownHTTPServer
 
     void http_connection::create_response(void)
     {
+        std::string_view sv = request_.target().substr(1);
+        std::string targetfile = {sv.data(), sv.size()};
+        
         beast::ostream(response_.body())
-            << "HUI";
+            << filecollector->get_file_data(targetfile);
     }
 
     void http_connection::write_response(void)
@@ -83,14 +78,16 @@ namespace ownHTTPServer
     }
 }
 
-void start_acceptor(tcp::acceptor& accepter, tcp::socket& sock, std::shared_ptr<Collector::FileCollector> fc)
+void ownHTTPServer::start_acceptor(tcp::acceptor& accepter, tcp::socket& sock,
+    std::shared_ptr<Collector::FileCollector> fc)
 {
     accepter.async_accept(sock,
-        [&](beast::error_code er){
+        [&, fc](beast::error_code er){
             if (!er)
             {
-                std::make_shared<ownHTTPServer::http_connection>(std::move(sock), fc)->start();
+                std::make_shared<ownHTTPServer::http_connection>
+                    (std::move(sock), fc)->start();
             }
-            start_acceptor(accepter, sock, fc);
+            start_acceptor(accepter, sock, fc); 
         });
 }

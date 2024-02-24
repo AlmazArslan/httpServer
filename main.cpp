@@ -20,9 +20,10 @@ int main(int argc, char *argv[])
         tcp::acceptor acceptor{ioc, {serverIP, serverPort}};
         tcp::socket socket{ioc};
 
-        std::shared_ptr<Collector::FileCollector> fileCollector = std::make_shared<Collector::FileCollector>();
+        std::shared_ptr<Collector::FileCollector> fileCollector =
+            std::make_shared<Collector::FileCollector>();
 
-        start_acceptor(acceptor, socket, fileCollector);
+        ownHTTPServer::start_acceptor(acceptor, socket, fileCollector);
 
         ioc.run();
     }

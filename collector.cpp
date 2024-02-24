@@ -40,7 +40,7 @@ Collector::FileCollector::FileCollector()
 std::string Collector::FileCollector::get_file_data(std::string s)
 {
     if (auto search = fileData.find(s); search != fileData.end())
-        return (fileData[s].c_str());
+        return (std::string(fileData[s]));
     else
         return std::string();
 }

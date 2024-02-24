@@ -23,7 +23,8 @@ namespace ownHTTPServer
     class http_connection : public std::enable_shared_from_this<http_connection>
     {
     public:
-        http_connection(tcp::socket socket, std::shared_ptr<Collector::FileCollector> fc);
+        http_connection(tcp::socket socket,
+            std::shared_ptr<Collector::FileCollector> fc);
         void start(void);
     private:
         std::shared_ptr<Collector::FileCollector> filecollector;
@@ -43,8 +44,10 @@ namespace ownHTTPServer
         );
     };
 
+    
+    void start_acceptor(tcp::acceptor& a, tcp::socket& s,
+        std::shared_ptr<Collector::FileCollector> fc);
 }
 
-void start_acceptor(tcp::acceptor& a, tcp::socket& s, std::shared_ptr<Collector::FileCollector> fc);
 
 #endif
